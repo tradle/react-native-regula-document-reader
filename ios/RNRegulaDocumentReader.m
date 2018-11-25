@@ -1,7 +1,7 @@
 @import UIKit;
 #import "RNRegulaDocumentReader.h"
 
-@implementation RNRegulaDocumentReaderBeta
+@implementation RNRegulaDocumentReader
 
 @synthesize bridge = _bridge;
 
@@ -24,7 +24,7 @@ RCT_EXPORT_METHOD(initialize:(RCTResponseSenderBlock)callback)
     }];
 }
 
-RCT_EXPORT_METHOD(showScanner:(NSDictionary*)opts callback:(RCTResponseSenderBlock)callback)
+RCT_EXPORT_METHOD(scan:(NSDictionary*)opts callback:(RCTResponseSenderBlock)callback)
 {
     dispatch_async(dispatch_get_main_queue(), ^{
         UIViewController *currentViewController = [[[UIApplication sharedApplication] keyWindow] rootViewController];
@@ -41,7 +41,6 @@ RCT_EXPORT_METHOD(showScanner:(NSDictionary*)opts callback:(RCTResponseSenderBlo
                     break;
 
                 case DocReaderActionComplete: {
-                    NSLog(@"Completed");
                     if (result != nil) {
                         NSMutableDictionary *totalResults = [NSMutableDictionary new];
                         NSMutableArray *jsonResults = [NSMutableArray array];
@@ -70,10 +69,6 @@ RCT_EXPORT_METHOD(showScanner:(NSDictionary*)opts callback:(RCTResponseSenderBlo
             }
         }];
     });
-}
-
-- (NSString *) encodeToBase64String:(UIImage *)image {
-    return [UIImageJPEGRepresentation(image, 0.8) base64EncodedStringWithOptions:NSDataBase64Encoding64CharacterLineLength];
 }
 
 @end
