@@ -125,11 +125,7 @@ public class RNRegulaDocumentReaderModule extends ReactContextBaseJavaModule {
   private Uri maybeGetImage(Bitmap bitmap) throws IOException {
     if (bitmap == null) return null;
 
-    ByteArrayOutputStream byteArrayOutputStream = new ByteArrayOutputStream();
-    bitmap.compress(Bitmap.CompressFormat.PNG, 100, byteArrayOutputStream);
-//                  bitmap.compress(Bitmap.CompressFormat.JPEG, 80, byteArrayOutputStream);
-    byte[] imageBytes = byteArrayOutputStream.toByteArray();
-    return ImageStoreModule.storeImageBytes(reactContext, imageBytes);
+    return ImageStoreModule.storeImageBitmap(reactContext, bitmap, "image/png", 100);
   }
 
   private byte[] readLicense() throws IOException {
