@@ -1,4 +1,14 @@
 import { NativeModules } from 'react-native'
-import wrap from './wrap'
+import { wrap } from './wrap'
 
-export default wrap(NativeModules.RNRegulaDocumentReader)
+const reader = wrap(NativeModules.RNRegulaDocumentReader)
+const initialize = reader.initialize
+const scan = async opts => {
+  await initialize()
+  return await reader.scan(opts)
+}
+
+export default {
+  initialize,
+  scan,
+}
