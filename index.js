@@ -8,7 +8,14 @@ const scan = async opts => {
   return await reader.scan(opts)
 }
 
+const Scenario = {
+  mrz: 'Mrz',
+  ocr: 'Ocr',
+  barcode: 'Barcode',
+}
+
 export default {
   initialize,
   scan,
+  Scenario,
 }

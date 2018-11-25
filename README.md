@@ -3,43 +3,71 @@
 
 ## Getting started
 
-`$ npm install react-native-regula-document-reader --save`
+`npm install react-native-regula-document-reader --save`
 
 ### Mostly automatic installation
 
-`$ react-native link react-native-regula-document-reader`
-
-### Manual installation
-
+`react-native link react-native-regula-document-reader`
 
 #### iOS
 
-1. In XCode, in the project navigator, right click `Libraries` ➜ `Add Files to [your project's name]`
-2. Go to `node_modules` ➜ `react-native-regula-document-reader` and add `RNRegulaDocumentReader.xcodeproj`
-3. In XCode, in the project navigator, select your project. Add `libRNRegulaDocumentReader.a` to your project's `Build Phases` ➜ `Link Binary With Libraries`
-4. Run your project (`Cmd+R`)<
+1. Add to Podfile:
+```
+  pod ‘DocumentReader’
+  pod ‘DocumentReaderFull’
+```
+1. Generate license for your application bundle ID: https://licensing.regulaforensics.com/. Add it to the iOS project (regula.license).
+1. Download database from: https://licensing.regulaforensics.com/Customer/Account/Databases. Add it to the iOS project (db.dat).
+1. Go to your project Targets -> Builds Settings -> Always Embed Swift Standard Libraries - set to Yes
+1. Go to your project Targets -> Info -> Add new key Privacy - Camera Usage Description = “Your message that will be appeared during ask to run camera”.
 
 #### Android
 
-1. Open up `android/app/src/main/java/[...]/MainActivity.java`
-  - Add `import com.regula.documentreader.RNRegulaDocumentReaderPackage;` to the imports at the top of the file
-  - Add `new RNRegulaDocumentReaderPackage()` to the list returned by the `getPackages()` method
-2. Append the following lines to `android/settings.gradle`:
-  	```
-  	include ':react-native-regula-document-reader'
-  	project(':react-native-regula-document-reader').projectDir = new File(rootProject.projectDir, 	'../node_modules/react-native-regula-document-reader/android')
-  	```
-3. Insert the following lines inside the dependencies block in `android/app/build.gradle`:
-  	```
-      compile project(':react-native-regula-document-reader')
-  	```
-
+1. Open your top level build.gradle (android/build.gradle)
+1. add the block below:
+```
+allprojects {
+  repositories {
+    maven {
+      url "http://maven.regulaforensics.com/RegulaDocumentReader"
+    }
+  }
+}
+```
+1. In your app level build.gradle:
+1. increate 'minSdkVersion' to 19 (if it's below)
+1. Open AndroidManifest.xml file and set: `android:allowBackup="true"`
+1. `mkdir -p android/app/src/main/res/raw/`
+1. Copy `regula.license` to that folder
+1. This project comes bundled with a db.dat, but if you want to use the latest, download it from Regula and copy it to `node_modules/react-native-regula-document-reader/android/src/main/assets/Regula/`
 
 ## Usage
-```javascript
-import RNRegulaDocumentReader from 'react-native-regula-document-reader';
+```js
+import RegulaDocumentReader, { Scenario } from 'react-native-regula-document-reader';
 
-// TODO: What to do with the module?
-RNRegulaDocumentReader;
+// do this early on to save some time
+await RegulaDocumentReader.initialize() 
+// initialize on the fly, and scan
+// set options as you like
+// see Regula docs for what they mean
+await RegulaDocumentReader.scan({
+  functionality: {
+    showTorchButton: true,
+    showCloseButton: true,
+    showCaptureButton: true,
+    showCaptureButtonAfterDelay: true,
+    showSkipNextPageButton: true,
+    videoCaptureMotionControl: true,
+    showChangeFrameButton: true,
+  },
+  customization: {
+    showHintMessages: true,
+    showHelpAnimation: true,
+  },
+  processParams: {
+    scenario: Scenario.mrz,
+    multipageProcessing: false,
+    dateFormat: 'dd-mm-yyyy',
+  },
+})
 ```
-  
