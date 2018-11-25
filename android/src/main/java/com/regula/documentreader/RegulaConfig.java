@@ -53,6 +53,10 @@ public class RegulaConfig {
       customization.showHelpAnimation = opts.getBoolean("showHelpAnimation");
     }
 
+    if (opts.hasKey("showHintMessages")) {
+      customization.showHintMessages = opts.getBoolean("showHintMessages");
+    }
+
     if (opts.hasKey("cameraFrameDefaultColor")) {
       customization.cameraFrameDefaultColor = opts.getString("cameraFrameDefaultColor");
     }

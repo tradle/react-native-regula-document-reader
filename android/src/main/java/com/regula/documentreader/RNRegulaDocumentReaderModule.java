@@ -81,24 +81,24 @@ public class RNRegulaDocumentReaderModule extends ReactContextBaseJavaModule {
                 }
 
                 resultObj.put("jsonResult", jsonArray);
-                Bitmap bitmap = documentReaderResults.getGraphicFieldImageByType(eGraphicFieldType.GT_DOCUMENT_FRONT);
-                if (bitmap != null) {
-                  ByteArrayOutputStream byteArrayOutputStream = new ByteArrayOutputStream();
-                  bitmap.compress(Bitmap.CompressFormat.PNG, 100, byteArrayOutputStream);
-//                  bitmap.compress(Bitmap.CompressFormat.JPEG, 80, byteArrayOutputStream);
-                  byte[] imageBytes = byteArrayOutputStream.toByteArray();
-                  Uri fileUri = ImageStoreModule.storeImageBytes(reactContext, imageBytes);
-                  resultObj.put("image", fileUri.toString());
 
-                  String resultString = resultObj.toString();
+                // TODO: do these in parallel, async
+                Uri front = maybeGetImage(documentReaderResults.getGraphicFieldImageByType(eGraphicFieldType.GT_DOCUMENT_FRONT));
+                Uri back = maybeGetImage(documentReaderResults.getGraphicFieldImageByType(eGraphicFieldType.GT_DOCUMENT_REAR));
 
-                  cb.invoke(null, resultString);
+                if (front != null) {
+                  resultObj.put("imageFront", front.toString());
                 }
+
+                if (back != null) {
+                  resultObj.put("imageBack", back.toString());
+                }
+
+                String resultString = resultObj.toString();
+                cb.invoke(null, resultString);
               } catch (Exception ex) {
                 cb.invoke(resultObj.toString(), null);
               }
-
-
             }
             break;
           case DocReaderAction.CANCEL:
@@ -121,6 +121,16 @@ public class RNRegulaDocumentReaderModule extends ReactContextBaseJavaModule {
 //  public void setScenario(String identifier) {
 //    DocumentReader.Instance().processParams.scenario = identifier;
 //  }
+
+  private Uri maybeGetImage(Bitmap bitmap) throws IOException {
+    if (bitmap == null) return null;
+
+    ByteArrayOutputStream byteArrayOutputStream = new ByteArrayOutputStream();
+    bitmap.compress(Bitmap.CompressFormat.PNG, 100, byteArrayOutputStream);
+//                  bitmap.compress(Bitmap.CompressFormat.JPEG, 80, byteArrayOutputStream);
+    byte[] imageBytes = byteArrayOutputStream.toByteArray();
+    return ImageStoreModule.storeImageBytes(reactContext, imageBytes);
+  }
 
   private byte[] readLicense() throws IOException {
     InputStream licInput = null;

@@ -42,19 +42,45 @@ RCT_EXPORT_METHOD(scan:(NSDictionary*)opts callback:(RCTResponseSenderBlock)call
 
                 case DocReaderActionComplete: {
                     if (result != nil) {
-                        NSMutableDictionary *totalResults = [NSMutableDictionary new];
+                        __block NSMutableDictionary *totalResults = [NSMutableDictionary new];
+                        __block int togo = 0;
+                        void __block (^setField)(id field, id value) = ^(id field, id value)
+                        {
+
+                            totalResults[field] = value;
+                            togo--;
+                            if (togo == 0) {
+                                callback(@[[NSNull null], totalResults]);
+                            }
+                        };
+
                         NSMutableArray *jsonResults = [NSMutableArray array];
                         for (DocumentReaderJsonResultGroup *resultObject in result.jsonResult.results) {
                             [jsonResults addObject:resultObject.jsonResult];
                         }
-                        [totalResults setObject:jsonResults forKey:@"jsonResult"];
-                        UIImage *image = [result getGraphicFieldImageByTypeWithFieldType:GraphicFieldTypeGf_DocumentFront source:ResultTypeRawImage];
 
-                        NSData *data = UIImagePNGRepresentation(image);
-                        [self->_bridge.imageStoreManager storeImageData:data withBlock:^(NSString *imageTag) {
-                            totalResults[@"image"] = imageTag;
-                            callback(@[[NSNull null], totalResults]);
-                        }];
+                        [totalResults setObject:jsonResults forKey:@"jsonResult"];
+                        UIImage *front = [result getGraphicFieldImageByTypeWithFieldType:GraphicFieldTypeGf_DocumentFront source:ResultTypeRawImage];
+
+                        UIImage *back = [result getGraphicFieldImageByTypeWithFieldType:GraphicFieldTypeGf_DocumentRear source:ResultTypeRawImage];
+
+                        NSData *frontData;
+                        NSData *backData;
+                        if (front != nil) {
+                            togo++;
+                            frontData = UIImagePNGRepresentation(front);
+                            [self->_bridge.imageStoreManager storeImageData:frontData withBlock:^(NSString *imageTag) {
+                                setField(@"imageFront", imageTag);
+                            }];
+                        }
+
+                        if (back != nil) {
+                            togo++;
+                            backData = UIImagePNGRepresentation(back);
+                            [self->_bridge.imageStoreManager storeImageData:backData withBlock:^(NSString *imageTag) {
+                                setField(@"imageBack", imageTag);
+                            }];
+                        }
                     }
                 }
                     break;
