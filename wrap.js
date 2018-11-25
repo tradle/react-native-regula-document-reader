@@ -19,6 +19,20 @@ const memoize = fn => {
   }
 }
 
+const oneAtATime = fn => {
+  let promise = Promise.resolve()
+  return async (...args) => {
+    try {
+      await promise
+    } catch (err) {
+      // ignore past failures
+    }
+
+    promise = fn(...args)
+    return promise
+  }
+}
+
 const promisifyObj = obj => Object.keys(obj).reduce((wrapper, key) => {
   const val = obj[key]
   if (typeof val === 'function') {
@@ -33,6 +47,7 @@ const promisifyObj = obj => Object.keys(obj).reduce((wrapper, key) => {
 
 export const wrap = reader => {
   const wrapper = promisifyObj(reader)
-  wrapper.initialize = memoize(wrapper.initialize)
+  wrapper.initialize = memoize(oneAtATime(wrapper.initialize))
+  wrapper.scan = oneAtATime(wrapper.scan)
   return wrapper
 }
