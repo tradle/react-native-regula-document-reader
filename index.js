@@ -1,6 +1,4 @@
+import { NativeModules } from 'react-native'
+import wrap from './wrap'
 
-import { NativeModules } from 'react-native';
-
-const { RNRegulaDocumentReader } = NativeModules;
-
-export default RNRegulaDocumentReader;
+export default wrap(NativeModules.RNRegulaDocumentReader)

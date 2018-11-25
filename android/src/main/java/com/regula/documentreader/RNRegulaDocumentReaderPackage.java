@@ -1,4 +1,4 @@
-package com.regula;
+package com.regula.documentreader;
 
 import com.facebook.react.ReactPackage;
 import com.facebook.react.bridge.JavaScriptModule;
