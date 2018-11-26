@@ -24,8 +24,19 @@ RCT_EXPORT_METHOD(initialize:(RCTResponseSenderBlock)callback)
     }];
 }
 
-RCT_EXPORT_METHOD(scan:(NSDictionary*)opts callback:(RCTResponseSenderBlock)callback)
+RCT_EXPORT_METHOD(scan:(NSDictionary*)opts callback:(RCTResponseSenderBlock)cb)
 {
+    __block RCTResponseSenderBlock callback = cb;
+    // prevent multiple invocations of cb
+    void __block (^callbackWith)(id results) = ^(id results)
+    {
+      if (callback == nil) return;
+
+      callback(results);
+      callback = nil;
+      [self.docReader stopScanner];
+    };
+
     dispatch_async(dispatch_get_main_queue(), ^{
         UIViewController *currentViewController = [[[UIApplication sharedApplication] keyWindow] rootViewController];
 
@@ -36,7 +47,7 @@ RCT_EXPORT_METHOD(scan:(NSDictionary*)opts callback:(RCTResponseSenderBlock)call
         [self.docReader showScanner:currentViewController completion:^(enum DocReaderAction action, DocumentReaderResults * _Nullable result, NSString * _Nullable error) {
             switch (action) {
                 case DocReaderActionCancel: {
-                    callback(@[@"Cancelled by user", [NSNull null]]);
+                    callbackWith(@[@"Cancelled by user", [NSNull null]]);
                 }
                     break;
 
@@ -50,7 +61,7 @@ RCT_EXPORT_METHOD(scan:(NSDictionary*)opts callback:(RCTResponseSenderBlock)call
                             totalResults[field] = value;
                             togo--;
                             if (togo == 0) {
-                                callback(@[[NSNull null], totalResults]);
+                                callbackWith(@[[NSNull null], totalResults]);
                             }
                         };
 
@@ -86,7 +97,7 @@ RCT_EXPORT_METHOD(scan:(NSDictionary*)opts callback:(RCTResponseSenderBlock)call
                     break;
 
                 case DocReaderActionError: {
-                  callback(@[error, [NSNull null]]);
+                  callbackWith(@[error, [NSNull null]]);
                 }
                     break;
 
