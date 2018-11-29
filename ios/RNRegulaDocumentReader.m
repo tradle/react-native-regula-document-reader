@@ -34,7 +34,7 @@ RCT_EXPORT_METHOD(scan:(NSDictionary*)opts callback:(RCTResponseSenderBlock)cb)
 
       callback(results);
       callback = nil;
-      [self.docReader stopScanner];
+      // [self.docReader stopScanner];
     };
 
     dispatch_async(dispatch_get_main_queue(), ^{
