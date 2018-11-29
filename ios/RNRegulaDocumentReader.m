@@ -45,11 +45,12 @@ RCT_EXPORT_METHOD(scan:(NSDictionary*)opts callback:(RCTResponseSenderBlock)cb)
         [self.docReader.functionality setValuesForKeysWithDictionary:opts[@"functionality"]];
 
         [self.docReader showScanner:currentViewController completion:^(enum DocReaderAction action, DocumentReaderResults * _Nullable result, NSString * _Nullable error) {
+            NSLog(@"DocumentReaderAction %ld", (long)action);
             switch (action) {
                 case DocReaderActionCancel: {
                     callbackWith(@[@"Cancelled by user", [NSNull null]]);
-                }
                     break;
+                }
 
                 case DocReaderActionComplete: {
                     if (result != nil) {
@@ -93,16 +94,26 @@ RCT_EXPORT_METHOD(scan:(NSDictionary*)opts callback:(RCTResponseSenderBlock)cb)
                             }];
                         }
                     }
-                }
                     break;
+                }
 
                 case DocReaderActionError: {
-                  callbackWith(@[error, [NSNull null]]);
+                    callbackWith(@[error, [NSNull null]]);
+                    break;
                 }
-                    break;
 
-                default:
+                case DocReaderActionProcess: {
                     break;
+                }
+
+                case DocReaderActionMorePagesAvailable: {
+                    break;
+                }
+
+                default: {
+                    callbackWith(@[@"unknown scanning status"]);
+                    break;
+                }
             }
         }];
     });
