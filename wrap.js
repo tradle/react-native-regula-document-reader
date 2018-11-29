@@ -19,17 +19,11 @@ const memoize = fn => {
   }
 }
 
-const oneAtATime = fn => {
+const oneAtATime = (fn, name) => {
   let promise = Promise.resolve()
-  return async (...args) => {
-    try {
-      await promise
-    } catch (err) {
-      // ignore past failures
-    }
-
-    promise = fn(...args)
-    return promise
+  return (...args) => {
+    const run = () => fn(...args)
+    return promise = promise.then(run, run)
   }
 }
 
