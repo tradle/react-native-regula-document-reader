@@ -17,7 +17,6 @@ import com.regula.documentreader.api.results.DocumentReaderResults;
 import org.json.JSONArray;
 import org.json.JSONObject;
 
-import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
 
@@ -70,18 +69,9 @@ public class RNRegulaDocumentReaderModule extends ReactContextBaseJavaModule {
       public void onCompleted(int action, DocumentReaderResults documentReaderResults, String s) {
         switch (action) {
           case DocReaderAction.COMPLETE:
-            if (documentReaderResults != null && documentReaderResults.jsonResult != null) {
-              JSONObject resultObj = new JSONObject();
-              JSONArray jsonArray = new JSONArray();
-              int index = 0;
+            JSONObject resultObj = new JSONObject();
+            if (documentReaderResults != null) {
               try {
-                for (DocumentReaderJsonResultGroup group : documentReaderResults.jsonResult.results) {
-                  jsonArray.put(index, new JSONObject(group.jsonResult));
-                  index++;
-                }
-
-                resultObj.put("jsonResult", jsonArray);
-
                 // TODO: do these in parallel, async
                 Uri front = maybeGetImage(documentReaderResults.getGraphicFieldImageByType(eGraphicFieldType.GT_DOCUMENT_FRONT));
                 Uri back = maybeGetImage(documentReaderResults.getGraphicFieldImageByType(eGraphicFieldType.GT_DOCUMENT_REAR));
@@ -93,13 +83,31 @@ public class RNRegulaDocumentReaderModule extends ReactContextBaseJavaModule {
                 if (back != null) {
                   resultObj.put("imageBack", back.toString());
                 }
-
-                String resultString = resultObj.toString();
-                cb.invoke(null, resultString);
               } catch (Exception ex) {
                 cb.invoke(resultObj.toString(), null);
+                return;
+              }
+
+              if (documentReaderResults.jsonResult != null) {
+                JSONArray jsonArray = new JSONArray();
+                int index = 0;
+                try {
+                  for (DocumentReaderJsonResultGroup group : documentReaderResults.jsonResult.results) {
+                    jsonArray.put(index, new JSONObject(group.jsonResult));
+                    index++;
+                  }
+
+                  resultObj.put("jsonResult", jsonArray);
+                } catch (Exception ex) {
+                  cb.invoke(resultObj.toString(), null);
+                  return;
+                }
               }
             }
+
+            String resultString = resultObj.toString();
+            cb.invoke(null, resultString);
+
             break;
           case DocReaderAction.CANCEL:
             cb.invoke("Cancelled by user", null);
@@ -108,10 +116,8 @@ public class RNRegulaDocumentReaderModule extends ReactContextBaseJavaModule {
             cb.invoke(s, null);
             break;
           default:
-            return;
+            break;
         }
-
-        reader.stopScanner();;
       }
 
     });
