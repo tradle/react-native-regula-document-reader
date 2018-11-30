@@ -2,15 +2,17 @@
 {
   "name": "react-native-regula-document-reader",
   "version": "1.0.0",
-  "description": "",
+  "description": "react-native wrapper for Regula Document Reader",
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1"
   },
   "keywords": [
-    "react-native"
+    "regula",
+    "react-native",
+    "document-scanner"
   ],
-  "author": "",
-  "license": "",
+  "author": "mvayngrib",
+  "license": "MIT",
   "peerDependencies": {
     "react-native": ">=0.41.2"
   }
