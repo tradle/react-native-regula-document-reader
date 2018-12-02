@@ -13,8 +13,8 @@
 
 1. Add to Podfile:
 ```
-  pod ‘DocumentReader’
-  pod ‘DocumentReaderFull’
+  pod 'DocumentReader', '~> 4.0'
+  pod 'DocumentReaderFull', '~> 4.0'
 ```
 1. Generate license for your application bundle ID: https://licensing.regulaforensics.com/. Convert it to a base64 string, e.g.: `fs.readFileSync('./path/to/regula.license').toString('base64')`
 1. Download database from: https://licensing.regulaforensics.com/Customer/Account/Databases. Add it to the iOS project (db.dat).
