@@ -2,6 +2,7 @@ package com.regula.documentreader;
 
 import android.graphics.Bitmap;
 import android.net.Uri;
+import android.util.Base64;
 
 import com.facebook.react.bridge.Callback;
 import com.facebook.react.bridge.ReactApplicationContext;
@@ -39,9 +40,9 @@ public class RNRegulaDocumentReaderModule extends ReactContextBaseJavaModule {
   }
 
   @ReactMethod
-  public void initialize(final Callback cb) {
+  public void initialize(ReadableMap opts, final Callback cb) {
     try {
-      byte[] license = readLicense();
+      byte[] license = Base64.decode(opts.getString("licenseKey"), Base64.NO_WRAP);
       DocumentReader.Instance().initializeReader(reactContext.getApplicationContext(), license, new DocumentReader.DocumentReaderInitCompletion() {
         @Override
         public void onInitCompleted(boolean b, String s) {
@@ -52,7 +53,7 @@ public class RNRegulaDocumentReaderModule extends ReactContextBaseJavaModule {
           }
         }
       });
-    } catch (IOException e) {
+    } catch (Exception e) {
       e.printStackTrace();
       cb.invoke(e.toString(), null);
     }

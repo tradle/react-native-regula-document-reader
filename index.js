@@ -2,9 +2,12 @@ import { NativeModules } from 'react-native'
 import { wrap } from './wrap'
 
 const reader = wrap(NativeModules.RNRegulaDocumentReader)
-const initialize = reader.initialize
-const scan = async opts => {
-  await initialize()
+const { initialize } = reader
+const scan = async ({ licenseKey, ...opts }) => {
+  if (licenseKey) {
+    await initialize({ licenseKey })
+  }
+
   return await reader.scan(opts)
 }
 

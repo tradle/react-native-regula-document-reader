@@ -7,11 +7,10 @@
 
 RCT_EXPORT_MODULE();
 
-RCT_EXPORT_METHOD(initialize:(RCTResponseSenderBlock)callback)
+RCT_EXPORT_METHOD(initialize:(NSDictionary*) options callback:(RCTResponseSenderBlock)callback)
 {
-    NSString *dataPath = [[NSBundle mainBundle] pathForResource:@"regula.license" ofType:nil];
-    NSData *licenseData = [NSData dataWithContentsOfFile:dataPath];
-
+    NSString *licenseKey = options[@"licenseKey"];
+    NSData *licenseData = [[NSData alloc] initWithBase64EncodedString:licenseKey options:0];
     ProcessParams *params = [[ProcessParams alloc] init];
     self.docReader = [[DocReader alloc] initWithProcessParams:params];
 
@@ -23,6 +22,23 @@ RCT_EXPORT_METHOD(initialize:(RCTResponseSenderBlock)callback)
         }
     }];
 }
+
+//RCT_EXPORT_METHOD(initialize:(RCTResponseSenderBlock)callback)
+//{
+//    NSString *dataPath = [[NSBundle mainBundle] pathForResource:@"regula.license" ofType:nil];
+//    NSData *licenseData = [NSData dataWithContentsOfFile:dataPath];
+//
+//    ProcessParams *params = [[ProcessParams alloc] init];
+//    self.docReader = [[DocReader alloc] initWithProcessParams:params];
+//
+//    [self.docReader initilizeReaderWithLicense:licenseData completion:^(BOOL successful, NSString * _Nullable error ) {
+//        if (successful) {
+//            callback(@[[NSNull null], [NSNull null]]);
+//        } else {
+//            callback(@[error, [NSNull null]]);
+//        }
+//    }];
+//}
 
 RCT_EXPORT_METHOD(scan:(NSDictionary*)opts callback:(RCTResponseSenderBlock)cb)
 {

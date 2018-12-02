@@ -13,6 +13,10 @@ const memoize = fn => {
   return async (...args) => {
     if (!val) {
       val = fn(...args)
+      val.catch(err => {
+        // allow retry after fail
+        val = null
+      })
     }
 
     return val
@@ -38,10 +42,23 @@ const promisifyObj = obj => Object.keys(obj).reduce((wrapper, key) => {
   return wrapper
 }, {})
 
+const validators = {
+  initialize: opts => {
+    if (!opts.licenseKey) throw new Error('expected base64-encoded string "licenseKey"')
+  },
+  scan: opts => {},
+}
+
+const wrapWithValidator = (fn, validate) => async (...args) => {
+  validate(...args)
+  return fn(...args)
+}
 
 export const wrap = reader => {
   const wrapper = promisifyObj(reader)
-  wrapper.initialize = memoize(oneAtATime(wrapper.initialize))
-  wrapper.scan = oneAtATime(wrapper.scan)
+  const initialize = memoize(oneAtATime(wrapper.initialize))
+  const scan = oneAtATime(wrapper.scan)
+  wrapper.initialize = wrapWithValidator(initialize, validators.initialize)
+  wrapper.scan = wrapWithValidator(scan, validators.scan)
   return wrapper
 }

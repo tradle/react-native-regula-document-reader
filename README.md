@@ -16,7 +16,7 @@
   pod ‘DocumentReader’
   pod ‘DocumentReaderFull’
 ```
-1. Generate license for your application bundle ID: https://licensing.regulaforensics.com/. Add it to the iOS project (regula.license).
+1. Generate license for your application bundle ID: https://licensing.regulaforensics.com/. Convert it to a base64 string, e.g.: `fs.readFileSync('./path/to/regula.license').toString('base64')`
 1. Download database from: https://licensing.regulaforensics.com/Customer/Account/Databases. Add it to the iOS project (db.dat).
 1. Go to your project Targets -> Builds Settings -> Always Embed Swift Standard Libraries - set to Yes
 1. Go to your project Targets -> Info -> Add new key Privacy - Camera Usage Description = “Your message that will be appeared during ask to run camera”.
@@ -46,7 +46,10 @@ allprojects {
 import RegulaDocumentReader, { Scenario } from 'react-native-regula-document-reader';
 
 // do this early on to save some time
-await RegulaDocumentReader.initialize() 
+await RegulaDocumentReader.initialize({
+  licenseKey: base64LicenseKeyYouCreatedAbove
+}) 
+
 // initialize on the fly, and scan
 // set options as you like
 // see Regula docs for what they mean
