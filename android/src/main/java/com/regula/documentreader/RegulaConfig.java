@@ -42,6 +42,9 @@ public class RegulaConfig {
     if (opts.hasKey("videoCaptureMotionControl")) {
       functionality.videoCaptureMotionControl = opts.getBoolean("videoCaptureMotionControl");
     }
+    if (opts.hasKey("orientation")) {
+      functionality.orientation = opts.getInt("orientation");
+    }
   }
 
   public static void setCustomization(Customization customization, ReadableMap opts) {
