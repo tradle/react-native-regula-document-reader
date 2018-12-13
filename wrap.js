@@ -47,6 +47,7 @@ const validators = {
     if (!opts.licenseKey) throw new Error('expected base64-encoded string "licenseKey"')
   },
   scan: opts => {},
+  prepareDatabase: opts => {},
 }
 
 const wrapWithValidator = (fn, validate) => async (...args) => {
@@ -60,5 +61,6 @@ export const wrap = reader => {
   const scan = oneAtATime(wrapper.scan)
   wrapper.initialize = wrapWithValidator(initialize, validators.initialize)
   wrapper.scan = wrapWithValidator(scan, validators.scan)
+  wrapper.prepareDatabase = wrapWithValidator(wrapper.prepareDatabase, validators.prepareDatabase)
   return wrapper
 }

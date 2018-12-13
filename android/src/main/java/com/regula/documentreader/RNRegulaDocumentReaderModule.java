@@ -38,6 +38,56 @@ public class RNRegulaDocumentReaderModule extends ReactContextBaseJavaModule {
   public String getName() {
     return "RNRegulaDocumentReader";
   }
+  @ReactMethod
+  public void prepareDatabase(ReadableMap opts, final Callback cb) {
+    String dbID = opts.getString("dbID");
+    if (dbID == null)
+      dbID = "Full";
+    try {
+      DocumentReader.Instance().prepareDatabase(reactContext.getApplicationContext(), dbID, new
+        DocumentReader.DocumentReaderPrepareCompletion() {
+          @Override
+          public void onPrepareProgressChanged(int progress) {
+            System.out.println("prepareDatabase: ");
+          //get progress update
+          }
+
+          @Override
+          public void onPrepareCompleted(boolean status, String error) {
+            System.out.println("prepareDatabase: completed status = " + status + "; error = " + error);
+            if (status) {
+              // initialize(opts, cb);
+              cb.invoke(null, null);
+            } else {
+              cb.invoke(error == null ? "preparation failed" : error);
+            }
+            //database downloaded
+          }
+      });
+    } catch (Exception e) {
+      e.printStackTrace();
+      cb.invoke(e.toString(), null);
+    }
+  }
+  @ReactMethod
+  public void initialize(ReadableMap opts, final Callback cb) {
+    try {
+      byte[] license = Base64.decode(opts.getString("licenseKey"), Base64.NO_WRAP);
+      DocumentReader.Instance().initializeReader(reactContext.getApplicationContext(), license, new DocumentReader.DocumentReaderInitCompletion() {
+        @Override
+        public void onInitCompleted(boolean b, String s) {
+          if (b) {
+            cb.invoke(null, null);
+          } else {
+            cb.invoke(s == null ? "initilization failed" : s);
+          }
+        }
+      });
+    } catch (Exception e) {
+      e.printStackTrace();
+      cb.invoke(e.toString(), null);
+    }
+  }
 
   @ReactMethod
   public void initialize(ReadableMap opts, final Callback cb) {

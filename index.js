@@ -2,7 +2,7 @@ import { NativeModules } from 'react-native'
 import { wrap } from './wrap'
 
 const reader = wrap(NativeModules.RNRegulaDocumentReader)
-const { initialize } = reader
+const { initialize, prepareDatabase } = reader
 const scan = async ({ licenseKey, ...opts }) => {
   if (licenseKey) {
     await initialize({ licenseKey })
@@ -30,5 +30,6 @@ const Scenario = {
 export default {
   initialize,
   scan,
+  prepareDatabase,
   Scenario,
 }
