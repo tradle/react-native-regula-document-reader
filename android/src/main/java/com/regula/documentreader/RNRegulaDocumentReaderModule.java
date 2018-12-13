@@ -69,25 +69,6 @@ public class RNRegulaDocumentReaderModule extends ReactContextBaseJavaModule {
       cb.invoke(e.toString(), null);
     }
   }
-  @ReactMethod
-  public void initialize(ReadableMap opts, final Callback cb) {
-    try {
-      byte[] license = Base64.decode(opts.getString("licenseKey"), Base64.NO_WRAP);
-      DocumentReader.Instance().initializeReader(reactContext.getApplicationContext(), license, new DocumentReader.DocumentReaderInitCompletion() {
-        @Override
-        public void onInitCompleted(boolean b, String s) {
-          if (b) {
-            cb.invoke(null, null);
-          } else {
-            cb.invoke(s == null ? "initilization failed" : s);
-          }
-        }
-      });
-    } catch (Exception e) {
-      e.printStackTrace();
-      cb.invoke(e.toString(), null);
-    }
-  }
 
   @ReactMethod
   public void initialize(ReadableMap opts, final Callback cb) {
