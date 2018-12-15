@@ -23,6 +23,23 @@ RCT_EXPORT_METHOD(initialize:(NSDictionary*) options callback:(RCTResponseSender
     }];
 }
 
+RCT_EXPORT_METHOD(prepareDatabase:(NSDictionary*) options callback:(RCTResponseSenderBlock)callback)
+{
+    NSString *dbID = options[@"dbID"];
+    ProcessParams *params = [[ProcessParams alloc] init];
+    self.docReader = [[DocReader alloc] initWithProcessParams:params];
+
+   [self.docReader prepareDatabaseWithDatabaseID:dbID progressHandler:^(NSProgress * _Nonnull progress) {
+            // self.initializationLabel.text = [NSString stringWithFormat:@"%.1f", progress.fractionCompleted * 100];
+        } completion:^(BOOL successful, NSString * _Nullable error) {
+        if (successful) {
+            callback(@[[NSNull null], [NSNull null]]);
+        } else {
+            callback(@[error, [NSNull null]]);
+        }
+    }];
+}
+
 //RCT_EXPORT_METHOD(initialize:(RCTResponseSenderBlock)callback)
 //{
 //    NSString *dataPath = [[NSBundle mainBundle] pathForResource:@"regula.license" ofType:nil];
