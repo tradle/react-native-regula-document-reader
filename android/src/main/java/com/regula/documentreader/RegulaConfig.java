@@ -48,8 +48,8 @@ public class RegulaConfig {
   }
 
   public static void setCustomization(Customization customization, ReadableMap opts) {
-    if (opts.hasKey("showHintMessages")) {
-      customization.showHintMessages = opts.getBoolean("showHintMessages");
+    if (opts.hasKey("showStatusMessages")) {
+      customization.showStatusMessages = opts.getBoolean("showStatusMessages");
     }
 
     if (opts.hasKey("showHelpAnimation")) {

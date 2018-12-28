@@ -48,7 +48,7 @@ public class RNRegulaDocumentReaderModule extends ReactContextBaseJavaModule {
         DocumentReader.DocumentReaderPrepareCompletion() {
           @Override
           public void onPrepareProgressChanged(int progress) {
-            System.out.println("prepareDatabase: ");
+            // System.out.println("prepareDatabase: ");
           //get progress update
           }
 
