@@ -89,9 +89,5 @@ public class RegulaConfig {
     if (opts.hasKey("debugSaveCroppedImages")) {
       processParams.debugSaveCroppedImages = opts.getBoolean("debugSaveCroppedImages");
     }
-
-    if (opts.hasKey("torchDisabled")) {
-      processParams.torchDisabled = opts.getBoolean("torchDisabled");
-    }
   }
 }
