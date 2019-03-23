@@ -69,7 +69,40 @@ public class RNRegulaDocumentReaderModule extends ReactContextBaseJavaModule {
       cb.invoke(e.toString(), null);
     }
   }
+/*
+  @ReactMethod
+  public void runAutoUpdate(ReadableMap opts, final Callback cb) {
+    String dbID = opts.getString("dbID");
+    if (dbID == null)
+      dbID = "Full";
+    try {
 
+    DocumentReader.Instance().runAutoUpdate(getApplicationContext(), "Full", new
+      DocumentReader.DocumentReaderPrepareCompletion() {
+        @Override
+        public void onPrepareProgressChanged(int progress) {
+        //get progress update
+        }
+
+        @Override
+        public void onPrepareCompleted(boolean status, String error) {
+          //database update completed
+          System.out.println("prepareDatabase: completed status = " + status + "; error = " + error);
+          if (status) {
+            // initialize(opts, cb);
+            cb.invoke(null, null);
+          } else {
+            cb.invoke(error == null ? "preparation failed" : error);
+          }
+          //database downloaded
+        }
+      });
+    } catch (Exception e) {
+      e.printStackTrace();
+      cb.invoke(e.toString(), null);
+    }
+  }
+  */
   @ReactMethod
   public void initialize(ReadableMap opts, final Callback cb) {
     try {
@@ -107,6 +140,8 @@ public class RNRegulaDocumentReaderModule extends ReactContextBaseJavaModule {
                 // TODO: do these in parallel, async
                 Uri front = maybeGetImage(documentReaderResults.getGraphicFieldImageByType(eGraphicFieldType.GT_DOCUMENT_FRONT));
                 Uri back = maybeGetImage(documentReaderResults.getGraphicFieldImageByType(eGraphicFieldType.GT_DOCUMENT_REAR));
+                Uri face = maybeGetImage(documentReaderResults.getGraphicFieldImageByType(eGraphicFieldType.GF_PORTRAIT));
+                Uri sig = maybeGetImage(documentReaderResults.getGraphicFieldImageByType(eGraphicFieldType.GF_SIGNATURE));
 
                 if (front != null) {
                   resultObj.put("imageFront", front.toString());
@@ -114,6 +149,14 @@ public class RNRegulaDocumentReaderModule extends ReactContextBaseJavaModule {
 
                 if (back != null) {
                   resultObj.put("imageBack", back.toString());
+                }
+
+                if (face !== null) {
+                  resultObj.put("imageFace", face.toString())
+                }
+
+                if (sig !== null) {
+                  resultObj.put("imageSignature", sig.toString())
                 }
               } catch (Exception ex) {
                 cb.invoke(resultObj.toString(), null);

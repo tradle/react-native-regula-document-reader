@@ -109,8 +109,14 @@ RCT_EXPORT_METHOD(scan:(NSDictionary*)opts callback:(RCTResponseSenderBlock)cb)
 
                         UIImage *back = [result getGraphicFieldImageByTypeWithFieldType:GraphicFieldTypeGf_DocumentRear source:ResultTypeRawImage];
 
+                        UIImage *face = [result getGraphicFieldImageByTypeWithFieldType:GraphicFieldTypeGf_Portrait];
+
+                        UIImage *sig = [result getGraphicFieldImageByTypeWithFieldType:GraphicFieldTypeGf_Signature];
+
                         NSData *frontData;
                         NSData *backData;
+                        NSData *faceData;
+                        NSData *sigData;
                         if (front != nil) {
                             togo++;
                             frontData = UIImagePNGRepresentation(front);
@@ -124,6 +130,22 @@ RCT_EXPORT_METHOD(scan:(NSDictionary*)opts callback:(RCTResponseSenderBlock)cb)
                             backData = UIImagePNGRepresentation(back);
                             [self->_bridge.imageStoreManager storeImageData:backData withBlock:^(NSString *imageTag) {
                                 setField(@"imageBack", imageTag);
+                            }];
+                        }
+
+                        if (face != nil) {
+                            togo++;
+                            faceData = UIImagePNGRepresentation(face);
+                            [self->_bridge.imageStoreManager storeImageData:faceData withBlock:^(NSString *imageTag) {
+                                setField(@"imageFace", imageTag);
+                            }];
+                        }
+
+                        if (sig != nil) {
+                            togo++;
+                            sigData = UIImagePNGRepresentation(sig);
+                            [self->_bridge.imageStoreManager storeImageData:sigData withBlock:^(NSString *imageTag) {
+                                setField(@"imageSignature", imageTag);
                             }];
                         }
                     }
