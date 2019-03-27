@@ -151,12 +151,12 @@ public class RNRegulaDocumentReaderModule extends ReactContextBaseJavaModule {
                   resultObj.put("imageBack", back.toString());
                 }
 
-                if (face !== null) {
-                  resultObj.put("imageFace", face.toString())
+                if (face != null) {
+                  resultObj.put("imageFace", face.toString());
                 }
 
-                if (sig !== null) {
-                  resultObj.put("imageSignature", sig.toString())
+                if (sig != null) {
+                  resultObj.put("imageSignature", sig.toString());
                 }
               } catch (Exception ex) {
                 cb.invoke(resultObj.toString(), null);
