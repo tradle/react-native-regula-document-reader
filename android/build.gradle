@@ -44,9 +44,14 @@ repositories {
 
 dependencies {
     implementation 'com.facebook.react:react-native:+'
-    implementation 'com.regula.documentreader.fullrfid:core:+@aar'
-    implementation('com.regula.documentreader:api:+@aar') {
+
+    implementation 'com.regula.documentreader.fullrfid:core:4.2.93462@aar'
+    implementation('com.regula.documentreader:api:4.2.93456@aar') {
         transitive = true
     }
+    // implementation 'com.regula.documentreader.fullrfid:core:+@aar'
+    // implementation('com.regula.documentreader:api:+@aar') {
+    //     transitive = true
+    // }
     implementation project(':react-native-image-store')  // From node_modules
 }
