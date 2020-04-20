@@ -7,10 +7,8 @@
 #import "RCTImageStoreManager.h"
 #endif
 
-#import <DocumentReader/DocumentReader-Swift.h>
+#import <DocumentReader/DocumentReader.h>
 
 @interface RNRegulaDocumentReader : NSObject <RCTBridgeModule>
-
-@property (strong, nonatomic) DocReader *docReader;
 
 @end

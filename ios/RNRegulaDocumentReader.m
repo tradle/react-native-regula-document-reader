@@ -1,5 +1,6 @@
 @import UIKit;
 #import "RNRegulaDocumentReader.h"
+@import DocumentReader;
 
 @implementation RNRegulaDocumentReader
 
@@ -11,10 +12,9 @@ RCT_EXPORT_METHOD(initialize:(NSDictionary*) options callback:(RCTResponseSender
 {
     NSString *licenseKey = options[@"licenseKey"];
     NSData *licenseData = [[NSData alloc] initWithBase64EncodedString:licenseKey options:0];
-    ProcessParams *params = [[ProcessParams alloc] init];
-    self.docReader = [[DocReader alloc] initWithProcessParams:params];
+    NSString *dbDat = [[NSBundle mainBundle] pathForResource:@"db.dat" ofType:nil];
 
-    [self.docReader initilizeReaderWithLicense:licenseData completion:^(BOOL successful, NSString * _Nullable error ) {
+    [RGLDocReader.shared initializeReader:licenseData databasePath:dbDat completion:^(BOOL successful, NSString * _Nullable error ) {
         if (successful) {
             callback(@[[NSNull null], [NSNull null]]);
         } else {
@@ -26,12 +26,7 @@ RCT_EXPORT_METHOD(initialize:(NSDictionary*) options callback:(RCTResponseSender
 RCT_EXPORT_METHOD(prepareDatabase:(NSDictionary*) options callback:(RCTResponseSenderBlock)callback)
 {
     NSString *dbID = options[@"dbID"];
-    ProcessParams *params = [[ProcessParams alloc] init];
-    self.docReader = [[DocReader alloc] initWithProcessParams:params];
-
-   [self.docReader prepareDatabaseWithDatabaseID:dbID progressHandler:^(NSProgress * _Nonnull progress) {
-            // self.initializationLabel.text = [NSString stringWithFormat:@"%.1f", progress.fractionCompleted * 100];
-        } completion:^(BOOL successful, NSString * _Nullable error) {
+   [RGLDocReader.shared prepareDatabase:dbID completion:^(BOOL successful, NSString * _Nullable error) {
         if (successful) {
             callback(@[[NSNull null], [NSNull null]]);
         } else {
@@ -72,20 +67,20 @@ RCT_EXPORT_METHOD(scan:(NSDictionary*)opts callback:(RCTResponseSenderBlock)cb)
 
     dispatch_async(dispatch_get_main_queue(), ^{
         UIViewController *currentViewController = [[[UIApplication sharedApplication] keyWindow] rootViewController];
+        
+        [RGLDocReader.shared.processParams setValuesForKeysWithDictionary:opts[@"processParams"]];
+        [RGLDocReader.shared.customization setValuesForKeysWithDictionary:opts[@"customization"]];
+        [RGLDocReader.shared.functionality setValuesForKeysWithDictionary:opts[@"functionality"]];
 
-        [self.docReader.processParams setValuesForKeysWithDictionary:opts[@"processParams"]];
-        [self.docReader.customization setValuesForKeysWithDictionary:opts[@"customization"]];
-        [self.docReader.functionality setValuesForKeysWithDictionary:opts[@"functionality"]];
-
-        [self.docReader showScanner:currentViewController completion:^(enum DocReaderAction action, DocumentReaderResults * _Nullable result, NSString * _Nullable error) {
+        [RGLDocReader.shared showScanner:currentViewController completion:^(enum RGLDocReaderAction action, RGLDocumentReaderResults * _Nullable result, NSString * _Nullable error) {
             NSLog(@"DocumentReaderAction %ld", (long)action);
             switch (action) {
-                case DocReaderActionCancel: {
+                case RGLDocReaderActionCancel: {
                     callbackWith(@[@"Cancelled by user", [NSNull null]]);
                     break;
                 }
 
-                case DocReaderActionComplete: {
+                case RGLDocReaderActionComplete: {
                     if (result != nil) {
                         __block NSMutableDictionary *totalResults = [NSMutableDictionary new];
                         __block int togo = 0;
@@ -100,23 +95,17 @@ RCT_EXPORT_METHOD(scan:(NSDictionary*)opts callback:(RCTResponseSenderBlock)cb)
                         };
 
                         NSMutableArray *jsonResults = [NSMutableArray array];
-                        for (DocumentReaderJsonResultGroup *resultObject in result.jsonResult.results) {
+                        for (RGLDocumentReaderJsonResultGroup *resultObject in result.jsonResult.results) {
                             [jsonResults addObject:resultObject.jsonResult];
                         }
 
                         [totalResults setObject:jsonResults forKey:@"jsonResult"];
-                        UIImage *front = [result getGraphicFieldImageByTypeWithFieldType:GraphicFieldTypeGf_DocumentFront source:ResultTypeRawImage];
+                        UIImage *front = [result getGraphicFieldImageByType:RGLGraphicFieldTypeGf_DocumentImage source:RGLResultTypeRawImage];
 
-                        UIImage *back = [result getGraphicFieldImageByTypeWithFieldType:GraphicFieldTypeGf_DocumentRear source:ResultTypeRawImage];
-
-                        UIImage *face = [result getGraphicFieldImageByTypeWithFieldType:GraphicFieldTypeGf_Portrait];
-
-                        UIImage *sig = [result getGraphicFieldImageByTypeWithFieldType:GraphicFieldTypeGf_Signature];
+                        UIImage *back = [result getGraphicFieldImageByType:RGLGraphicFieldTypeGf_DocumentImage source:RGLResultTypeRawImage];
 
                         NSData *frontData;
                         NSData *backData;
-                        NSData *faceData;
-                        NSData *sigData;
                         if (front != nil) {
                             togo++;
                             frontData = UIImagePNGRepresentation(front);
@@ -132,36 +121,20 @@ RCT_EXPORT_METHOD(scan:(NSDictionary*)opts callback:(RCTResponseSenderBlock)cb)
                                 setField(@"imageBack", imageTag);
                             }];
                         }
-
-                        if (face != nil) {
-                            togo++;
-                            faceData = UIImagePNGRepresentation(face);
-                            [self->_bridge.imageStoreManager storeImageData:faceData withBlock:^(NSString *imageTag) {
-                                setField(@"imageFace", imageTag);
-                            }];
-                        }
-
-                        if (sig != nil) {
-                            togo++;
-                            sigData = UIImagePNGRepresentation(sig);
-                            [self->_bridge.imageStoreManager storeImageData:sigData withBlock:^(NSString *imageTag) {
-                                setField(@"imageSignature", imageTag);
-                            }];
-                        }
                     }
                     break;
                 }
 
-                case DocReaderActionError: {
+                case RGLDocReaderActionError: {
                     callbackWith(@[error, [NSNull null]]);
                     break;
                 }
 
-                case DocReaderActionProcess: {
+                case RGLDocReaderActionProcess: {
                     break;
                 }
 
-                case DocReaderActionMorePagesAvailable: {
+                case RGLDocReaderActionMorePagesAvailable: {
                     break;
                 }
 
