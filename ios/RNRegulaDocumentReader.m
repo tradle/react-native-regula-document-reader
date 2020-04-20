@@ -10,11 +10,31 @@ RCT_EXPORT_MODULE();
 
 RCT_EXPORT_METHOD(initialize:(NSDictionary*) options callback:(RCTResponseSenderBlock)callback)
 {
+    NSString *dbResource = options[@"dbResource"];
+    NSString *licenseResource = options[@"licenseResource"];
     NSString *licenseKey = options[@"licenseKey"];
-    NSData *licenseData = [[NSData alloc] initWithBase64EncodedString:licenseKey options:0];
-    NSString *dbDat = [[NSBundle mainBundle] pathForResource:@"db.dat" ofType:nil];
+    NSData *licenseData;
+    if (licenseKey == nil) {
+        NSString *path = [[NSBundle mainBundle] pathForResource:licenseResource ofType:nil];
+        licenseData = [NSData dataWithContentsOfFile:path];
+    } else {
+        licenseData = [[NSData alloc] initWithBase64EncodedString:licenseKey options:0];
+    }
+    
+    if (dbResource == nil) {
+        [RGLDocReader.shared initializeReader:licenseData completion:^(BOOL successful, NSString * _Nullable error ) {
+            if (successful) {
+                callback(@[[NSNull null], [NSNull null]]);
+            } else {
+                callback(@[error, [NSNull null]]);
+            }
+        }];
+        
+        return;
+    }
 
-    [RGLDocReader.shared initializeReader:licenseData databasePath:dbDat completion:^(BOOL successful, NSString * _Nullable error ) {
+    NSString *path = [[NSBundle mainBundle] pathForResource:dbResource ofType:nil];
+    [RGLDocReader.shared initializeReader:licenseData databasePath:path completion:^(BOOL successful, NSString * _Nullable error ) {
         if (successful) {
             callback(@[[NSNull null], [NSNull null]]);
         } else {
@@ -104,6 +124,15 @@ RCT_EXPORT_METHOD(scan:(NSDictionary*)opts callback:(RCTResponseSenderBlock)cb)
 
                         UIImage *back = [result getGraphicFieldImageByType:RGLGraphicFieldTypeGf_DocumentImage source:RGLResultTypeRawImage];
 
+                        if (opts[@"returnBase64Images"]) {
+                            NSData *frontImageData = UIImageJPEGRepresentation(front, 1.0);
+                            NSData *backImageData = UIImageJPEGRepresentation(back, 1.0);
+                            setField(@"imageFront", [frontImageData base64EncodedStringWithOptions:0]);
+                            setField(@"imageBack", [backImageData base64EncodedStringWithOptions:0]);
+                            callbackWith(@[[NSNull null], totalResults]);
+                            return;
+                        }
+                        
                         NSData *frontData;
                         NSData *backData;
                         if (front != nil) {
