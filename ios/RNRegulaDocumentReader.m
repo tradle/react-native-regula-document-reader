@@ -20,7 +20,7 @@ RCT_EXPORT_METHOD(initialize:(NSDictionary*) options callback:(RCTResponseSender
     } else {
         licenseData = [[NSData alloc] initWithBase64EncodedString:licenseKey options:0];
     }
-    
+
     if (dbResource == nil) {
         [RGLDocReader.shared initializeReader:licenseData completion:^(BOOL successful, NSString * _Nullable error ) {
             if (successful) {
@@ -29,7 +29,7 @@ RCT_EXPORT_METHOD(initialize:(NSDictionary*) options callback:(RCTResponseSender
                 callback(@[error, [NSNull null]]);
             }
         }];
-        
+
         return;
     }
 
@@ -87,7 +87,7 @@ RCT_EXPORT_METHOD(scan:(NSDictionary*)opts callback:(RCTResponseSenderBlock)cb)
 
     dispatch_async(dispatch_get_main_queue(), ^{
         UIViewController *currentViewController = [[[UIApplication sharedApplication] keyWindow] rootViewController];
-        
+
         [RGLDocReader.shared.processParams setValuesForKeysWithDictionary:opts[@"processParams"]];
         [RGLDocReader.shared.customization setValuesForKeysWithDictionary:opts[@"customization"]];
         [RGLDocReader.shared.functionality setValuesForKeysWithDictionary:opts[@"functionality"]];
@@ -114,17 +114,59 @@ RCT_EXPORT_METHOD(scan:(NSDictionary*)opts callback:(RCTResponseSenderBlock)cb)
                             }
                         };
 
-                        NSMutableArray *jsonResults = [NSMutableArray array];
-                        for (RGLDocumentReaderJsonResultGroup *resultObject in result.jsonResult.results) {
-                            [jsonResults addObject:resultObject.jsonResult];
+                        NSDictionary* whatToReturn = opts[@"return"] ?: [[NSDictionary alloc] init];
+                        if (whatToReturn[@"barcodeResult"]) {
+                            NSMutableArray *results = [NSMutableArray array];
+                            for (RGLDocumentReaderBarcodeField *field in result.barcodeResult.fields) {
+                                NSDictionary* fieldInfo = [[NSMutableDictionary alloc] init];
+                                RGLBarcodeType type = [field barcodeType];
+                                NSString* typeString = [RNRegulaDocumentReader barcodeTypeToString:type];
+                                [fieldInfo setValue:typeString forKey:@"type"];
+                                NSString *base64 = [[field data] base64EncodedStringWithOptions:0];
+                                [fieldInfo setValue:base64 forKey:@"data"];
+                                [results addObject:fieldInfo];
+                            }
+
+                            [totalResults setObject:results forKey:@"barcodeResult"];
                         }
 
-                        [totalResults setObject:jsonResults forKey:@"jsonResult"];
-                        UIImage *front = [result getGraphicFieldImageByType:RGLGraphicFieldTypeGf_DocumentImage source:RGLResultTypeRawImage];
+                        if (whatToReturn[@"jsonResult"]) {
+                            NSMutableArray *results = [NSMutableArray array];
+                            for (RGLDocumentReaderJsonResultGroup *resultObject in result.jsonResult.results) {
+                                [results addObject:resultObject.jsonResult];
+                            }
 
-                        UIImage *back = [result getGraphicFieldImageByType:RGLGraphicFieldTypeGf_DocumentImage source:RGLResultTypeRawImage];
+                            [totalResults setObject:results forKey:@"jsonResult"];
+                        }
 
-                        if (opts[@"returnBase64Images"]) {
+                        // Get document image from the first page
+                        UIImage *front;
+                        UIImage *back;
+                        NSMutableArray *results = [NSMutableArray array];
+                        for (RGLDocumentReaderGraphicField *field in result.graphicResult.fields) {
+                            switch ([field fieldType]) {
+                                case RGLGraphicFieldTypeGf_DocumentImage:
+                                    if ([field pageIndex] == 0) {
+                                        front = [field value];
+                                    } else if ([field pageIndex] == 1) {
+                                        back = [field value];
+                                    }
+
+                                    break;
+                                default:
+                                    break;
+                            }
+                        }
+
+                        [totalResults setObject:results forKey:@"jsonResult"];
+
+                        // this didn't work for getting the front image for some reason
+//                        UIImage *front = [result getGraphicFieldImageByType:RGLGraphicFieldTypeGf_DocumentImage source:RGLResultTypeGraphics pageIndex:0];
+//
+//                        // Get document image from the second page
+//                        UIImage *back = [result getGraphicFieldImageByType:RGLGraphicFieldTypeGf_DocumentImage source:RGLResultTypeRawImage pageIndex:1];
+
+                        if (whatToReturn[@"base64Images"]) {
                             NSData *frontImageData = UIImageJPEGRepresentation(front, 1.0);
                             NSData *backImageData = UIImageJPEGRepresentation(back, 1.0);
                             setField(@"imageFront", [frontImageData base64EncodedStringWithOptions:0]);
@@ -132,7 +174,7 @@ RCT_EXPORT_METHOD(scan:(NSDictionary*)opts callback:(RCTResponseSenderBlock)cb)
                             callbackWith(@[[NSNull null], totalResults]);
                             return;
                         }
-                        
+
                         NSData *frontData;
                         NSData *backData;
                         if (front != nil) {
@@ -174,6 +216,47 @@ RCT_EXPORT_METHOD(scan:(NSDictionary*)opts callback:(RCTResponseSenderBlock)cb)
             }
         }];
     });
+}
+
++ (NSString*)barcodeTypeToString:(RGLBarcodeType)barcodeType {
+    switch(barcodeType) {
+        case RGLBarcodeTypeCode128:
+            return @"Code128";
+        case RGLBarcodeTypeCode39:
+            return @"Code39";
+        case RGLBarcodeTypeEAN8:
+            return @"EAN8";
+        case RGLBarcodeTypeITF:
+            return @"ITF";
+        case RGLBarcodeTypePDF417:
+            return @"PDF417";
+        case RGLBarcodeTypeSTF:
+            return @"STF";
+        case RGLBarcodeTypeMTF:
+            return @"MTF";
+        case RGLBarcodeTypeIATA:
+            return @"IATA";
+        case RGLBarcodeTypeCODABAR:
+            return @"CODABAR";
+        case RGLBarcodeTypeUPCA:
+            return @"UPCA";
+        case RGLBarcodeTypeCODE93:
+            return @"CODE93";
+        case RGLBarcodeTypeUPCE:
+            return @"UPCE";
+        case RGLBarcodeTypeEAN13:
+            return @"EAN13";
+        case RGLBarcodeTypeQRCODE:
+            return @"QRCODE";
+        case RGLBarcodeTypeAZTEC:
+            return @"AZTEC";
+        case RGLBarcodeTypeDATAMATRIX:
+            return @"DATAMATRIX";
+        case RGLBarcodeTypeALL_1D:
+            return @"ALL_1D";
+        default:
+            return @"Unknown";
+    }
 }
 
 @end
