@@ -167,10 +167,8 @@ RCT_EXPORT_METHOD(scan:(NSDictionary*)opts callback:(RCTResponseSenderBlock)cb)
 //                        UIImage *back = [result getGraphicFieldImageByType:RGLGraphicFieldTypeGf_DocumentImage source:RGLResultTypeRawImage pageIndex:1];
 
                         if (whatToReturn[@"base64Images"]) {
-                            NSData *frontImageData = UIImageJPEGRepresentation(front, 1.0);
-                            NSData *backImageData = UIImageJPEGRepresentation(back, 1.0);
-                            setField(@"imageFront", [frontImageData base64EncodedStringWithOptions:0]);
-                            setField(@"imageBack", [backImageData base64EncodedStringWithOptions:0]);
+                            setField(@"imageFront", [RNRegulaDocumentReader uiimageToNSDictionary:front]);
+                            setField(@"imageBack", [RNRegulaDocumentReader uiimageToNSDictionary:back]);
                             callbackWith(@[[NSNull null], totalResults]);
                             return;
                         }
@@ -257,6 +255,20 @@ RCT_EXPORT_METHOD(scan:(NSDictionary*)opts callback:(RCTResponseSenderBlock)cb)
         default:
             return @"Unknown";
     }
+}
+
++ (NSDictionary*) uiimageToNSDictionary:(UIImage*) image {
+    double widthInPoints = image.size.width;
+    double widthInPixels = widthInPoints * image.scale;
+    double heightInPoints = image.size.height;
+    double heightInPixels = heightInPoints * image.scale;
+    NSData *imageData = UIImageJPEGRepresentation(image, 1.0);
+    NSString* base64 = [imageData base64EncodedStringWithOptions:0];
+    return @{
+        @"width": [NSNumber numberWithDouble:widthInPixels],
+        @"height": [NSNumber numberWithDouble:heightInPixels],
+        @"dataUri": [@"data:image/jpeg;base64," stringByAppendingString:base64]
+    };
 }
 
 @end
